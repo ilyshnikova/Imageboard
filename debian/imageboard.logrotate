@@ -1,0 +1,5 @@
+/imageboard.log
+{
+	weekly
+	rotate 2
+}
