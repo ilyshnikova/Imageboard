@@ -1,5 +1,6 @@
 server {
 	root /var/www/imageboard/public;
+	include /etc/nginx/fastcgi_params;
 	location /fcgi-bin/ {
 		error_log /dev/stderr info;
 		fastcgi_pass   localhost:9000;

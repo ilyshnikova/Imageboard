@@ -1,4 +1,4 @@
-package IMB::Logger
+package IMB::Logger;
 
 use strict;
 use warnings;
@@ -68,3 +68,4 @@ sub LOGGER {
 	return 1;
 }
 
+1;
