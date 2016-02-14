@@ -1,27 +1,54 @@
-#package IMB::NginXDispatch
-#!/usr/bin/perl
+package IMB::NginXDispatch;
 
 use strict;
 use warnings;
 use autodie qw(open);
+use utf8;
 
+use Hash::Util qw(lock_hash);
 use IO::Handle;
 use FCGI;
 use POSIX;
 use IMB::MySQL qw(connect_to_mysql);
 use CGI::Simple;
-
+use JSON qw(from_json to_json);
 use FCGI::ProcManager qw(pm_manage pm_pre_dispatch pm_post_dispatch);
+use Carp::Always;
+use Encode;
+
+use base 'Exporter';
+our @EXPORT_OK = qw(start_dispatch);
+
+
+sub process_request {
+	my $dbh = shift;
+
+	my $answer = eval {
+		my $cgi = new CGI::Simple;
+		my $data = from_json($cgi->param('json'), { utf8  => 1 });
+
+		lock_hash(%$data);
+
+		require 'IMB/Workers/' . $data->{'module'} . '.pm';
+		my $worker = ('IMB::Workers::' . $data->{'module'})->new($dbh);
+
+		my $worker_ans = $worker->respond($data);
+		$worker_ans->{'status'} = 1;
+		return $worker_ans;
+	};
+
+	if ($@) {
+		$answer = {'status' => 0, 'error' => $@};
+	}
+
+	print "Content-Type: application/json;charset=UTF-8\r\n\r\n";
+
+	print to_json($answer, { utf8  => 1 });
+}
+
 
 sub start_dispatch {
-
 	fork && exit 0;
-
-	POSIX::setsid()
-	or die "Can't set sid: $!";
-
-	chdir '/'
-	or die "Can't chdir: $!";
 
 	my $socket = FCGI::OpenSocket(":9000", 5);
 	my $request = FCGI::Request(\*STDIN, \*STDOUT, \*STDERR, \%ENV, $socket);
@@ -41,14 +68,7 @@ sub start_dispatch {
 
 	while($request->Accept() >= 0) {
 		pm_pre_dispatch();
-
-		print "Content-Type: text/plain\r\n\r\n";
-		print "$$: ".$count++;
-
-		my $cgi = new CGI::Simple;
-		my $module = $cgi->param('action');
-		print $fh "lalalaalla = $module\n";
-
+		process_request($dbh);
 		pm_post_dispatch();
 	}
 	close($fh);
@@ -61,4 +81,5 @@ sub reopen_std {
 	open(STDERR, "+>&STDIN") or die "Can't open STDERR: $!";
 };
 
-start_dispatch();
+1;
+

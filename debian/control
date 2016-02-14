@@ -16,6 +16,7 @@ Depends:
 	libfcgi-perl,
 	libcgi-fast-perl,
 	libfcgi-procmanager-perl,
+	libcarp-always-perl,
 Description: common apache2 settings
 
 
