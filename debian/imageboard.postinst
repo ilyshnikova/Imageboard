@@ -43,8 +43,8 @@ create table if not exists CookieKeyByUserId (
 	CookieKey int(11) not null default 0,
 	primary key(CookieKey, UserId)
 );
-
-
+EOF
+killall perl-fcgi-pm; perl /root/imageboard/server.pl
 
 
 
