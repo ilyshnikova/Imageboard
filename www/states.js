@@ -238,6 +238,7 @@ SendQuery.prototype.on_enter = function(context) {
 	data['client'] = 'browser';
 	data = JSON.stringify(data);
 	this.started = 0;
+	this.aborted = false;
 	this.ajax = $.ajax({
 		method: "GET",
 		url: "http://192.168.56.10/fcgi-bin",
@@ -248,7 +249,7 @@ SendQuery.prototype.on_enter = function(context) {
 		success: function(response) {
 			_this.started = 1;
 			if (response.status) {
-				context[_this.params.write_to || 'response'] = response.table;
+				context[_this.params.write_to || 'response'] = response.data;
 				State.go_to(context, _this.params)
 			} else {
 				alert(response.error);
@@ -258,8 +259,10 @@ SendQuery.prototype.on_enter = function(context) {
 		},
 		error: function (undefined, undefined, error) {
 			_this.started = 1;
-			alert(error);
-			throw new Error(error);
+			if (!_this.aborted) {
+				alert(error);
+				throw new Error(error);
+			}
 		},
 	});
 
@@ -267,6 +270,7 @@ SendQuery.prototype.on_enter = function(context) {
 
 SendQuery.prototype.on_exit = function(context) {
 	if (!this.started && this.ajax !== undefined) {
+		this.aborted = true;
 		this.ajax.abort();
 	}
 }
@@ -277,10 +281,23 @@ function Enabler(params) {
 
 Enabler.prototype.on_enter = function(context) {
 	this.target = call_or_get(this.params.target, context);
-	this.target.removeClass("disabled");
+	this.target.removeAttr('disabled');
 }
 
 Enabler.prototype.on_exit = function(context) {
+	this.target.attr('disabled', 'disabled');
+}
+
+function BootstratpEnabler(params) {
+	this.params = params;
+}
+
+BootstratpEnabler.prototype.on_enter = function(context) {
+	this.target = call_or_get(this.params.target, context);
+	this.target.removeClass("disabled");
+}
+
+BootstratpEnabler.prototype.on_exit = function(context) {
 	this.target.addClass("disabled");
 }
 

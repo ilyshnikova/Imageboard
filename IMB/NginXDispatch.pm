@@ -32,9 +32,10 @@ sub process_request {
 		require 'IMB/Workers/' . $data->{'module'} . '.pm';
 		my $worker = ('IMB::Workers::' . $data->{'module'})->new($dbh);
 
-		my $worker_ans = $worker->respond($data);
-		$worker_ans->{'status'} = 1;
-		return $worker_ans;
+		return {
+			'data' => $worker->respond($data),
+			'status' => 1,
+		};
 	};
 
 	if ($@) {
@@ -53,7 +54,7 @@ sub start_dispatch {
 	my $socket = FCGI::OpenSocket(":9000", 5);
 	my $request = FCGI::Request(\*STDIN, \*STDOUT, \*STDERR, \%ENV, $socket);
 
-	pm_manage(n_processes => 1);
+	pm_manage(n_processes => 2);
 
 
 	my $dbh = connect_to_mysql("imbdb");

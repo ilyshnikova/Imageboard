@@ -64,7 +64,7 @@ sub respond {
 		my $new_id = $self->add_message($data);
 		return {'message_id' => $new_id};
 	} elsif ($data->{'type'} eq 'get') {
-		return {"data" => $self->get_messages($data), "1" => 'привет'};
+		return $self->get_messages($data);
 	} else {
 		die "incorrect type";
 	}
