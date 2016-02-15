@@ -1,0 +1,22 @@
+Source: imageboard
+Section: imb
+Priority: extra
+Maintainer: Anastasiya Tsarkova  <ilyshnikova@yandex.ru>
+Build-Depends:
+	debhelper (>=7.0.50),
+Standards-Version: 0.0.1
+
+Package: imageboard
+Architecture: any
+Section: imb
+Priority: extra
+Depends:
+	nginx,
+	libcgi-simple-perl,
+	libfcgi-perl,
+	libcgi-fast-perl,
+	libfcgi-procmanager-perl,
+	libcarp-always-perl,
+Description: common apache2 settings
+
+

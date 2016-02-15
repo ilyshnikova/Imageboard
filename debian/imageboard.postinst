@@ -1,0 +1,52 @@
+rm -rf /etc/nginx/sites-enabled/* &&  ln -s /etc/nginx/sites-available/imageboard-nginx-config  /etc/nginx/sites-enabled/config
+cat <<EOF | mysql -uroot
+create database if not exists imbdb;
+use imbdb;
+#
+# CREATE PROPERTIES TABLES
+#
+create table if not exists Boards (
+	Id int(11) not null default 0,
+	Name varchar(255) not null default '',
+	primary key(Id)
+);
+create table if not exists Messages (
+	Id int(11) not null default 0,
+	Message blob not null,
+	UserId int(11) not null default 0,
+	ParentMessageId int(11) not null default 0,
+	Time timestamp not null default 0,
+	primary key(Id)
+) default charset=utf8;
+
+create table if not exists Users (
+	Id int(11) not null default 0,
+	Name varchar(255) not null default '',
+	Email varchar(255) not null default '',
+	primary key(Id)
+);
+#
+# CREATE RELATIONS TABLES
+#
+create table if not exists BoardIdByMessagesId (
+	BoardId int(11) not null default 0,
+	MessageId int(11) not null default 0,
+	primary key(BoardId, MessageId)
+);
+create table if not exists UserIdByMessagesId (
+	UserId int(11) not null default 0,
+	MessageId int(11) not null default 0,
+	primary key(UserId, MessageId)
+);
+create table if not exists CookieKeyByUserId (
+	UserId int(11) not null default 0,
+	CookieKey int(11) not null default 0,
+	primary key(CookieKey, UserId)
+);
+EOF
+killall perl-fcgi-pm; perl /root/imageboard/server.pl
+
+
+
+
+
