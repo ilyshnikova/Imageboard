@@ -77,7 +77,7 @@ sub start_dispatch {
 
 
 sub reopen_std {
-	open(STDIN,  "+>>/dev/null") or die "Can't open STDIN: $!";
+	open(STDIN,  "+>>/root/imb.log") or die "Can't open STDIN: $!";
 	open(STDOUT, "+>&STDIN") or die "Can't open STDOUT: $!";
 	open(STDERR, "+>&STDIN") or die "Can't open STDERR: $!";
 };

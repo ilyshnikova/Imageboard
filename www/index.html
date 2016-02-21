@@ -14,17 +14,97 @@
 
 		<!-- Latest compiled and minified JavaScript -->
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<style>
+		.menu {
+			position: fixed;
+			right: 10px;
+			top: 20%;
+			background: #;
+		}
+   		.text {
+   			height: 1000px;
+   		}
+	</style>
 
 
 	</head>
 
-	<body>
+
+	<body style="padding:10px;background-color:#EEF6FF">
+
+		<div class="menu">
+			<div
+				class="panel panel-primary"
+				style="width:400px;border:1px solid #aaa"
+			>
+				<div
+					class="panel-heading"
+					style="background-image:linear-gradient(to bottom,#64A3DA 0,#64A3DA 100%)"
+				>
+					Create Message.
+				</div>
+				<div class="panel-body" style="background-color:#FFFCEC">
+					<div class="input-group">
+						<span class="input-group-addon">&nbsp;@&nbsp;&nbsp;</span>
+						<input
+							type="text"
+							class="form-control"
+							placeholder="Username"
+							aria-describedby="basic-addon1"
+							id=send_message_user_name
+							style="background-color:#FDFCF7"
+						>
+					</div>
+					<br>
+					<div class="input-group">
+						<span
+							class="input-group-addon"
+							style="font-size:20px"
+						>
+							&nbsp;&#9993;&nbsp;
+						</span>
+						<input
+							type="text"
+							class="form-control"
+							placeholder="Email"
+							aria-describedby="basic-addon1"
+							id=send_message_user_email
+							style="background-color:#FDFCF7"
+						>
+					</div>
+					<br>
+					<div class="input-group">
+						<span class="input-group-addon">Text</span>
+						<textarea
+							class="form-control"
+							id=message_text
+							placeholder="Text of the message..."
+							style="background-color:#FDFCF7"
+							disabled
+						></textarea>
+					</div>
+					<br>
+					<button
+						class="btn"
+						id=send_message
+						type=button
+						style="background-image:linear-gradient(to bottom,#64A3DA 0,#64A3DA 100%);color:#fff"
+					>
+						Send Message
+					</button>
+
+				</div>
+			</div>
+
+
+
+		</div>
+
+
 		<div id=messages style="width:100%">
 		</div>
-		<input type=text id=message_text style="width:100%" disabled>
-		<button id=send_message type=button >
-			Отправить
-		</button>
 	</body>
 
 </html>
