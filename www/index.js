@@ -19,17 +19,23 @@ $(function() {
 				},
 			}),
 			new Timer({
-				'timeout' : 1,
+				'timeout' : 1000000,
 				'type' : 'next',
 				'new_state' : 'get_messages',
 			}),
 		]),
 		'send_message' : new SendQuery({
 			'ajax_data' : function(context) {
+				var user_name = $('#send_message_user_name').val();
+				if (user_name == '')  {
+					user_name = 'Anonymous';
+				}
 				return {
 					'module' : 'Message',
 					'type' : 'add',
 					'text' : $('#message_text').val(),
+					'user_name' : user_name,
+					'user_email' : $('#send_message_user_email').val(),
 				};
 			},
 			'type' : 'next',
@@ -78,9 +84,34 @@ $(function() {
 				var html = [];
 				console.log("Start drawing");
 				for (var i = 0; i < context.messages.length; ++i) {
+					var date = new Date(context.messages[i].Time*1000);
+					//var iso = date.toISOString().match(/(\d{2}:\d{2}:\d{2})/)
+					var head = context.messages[i].UserName
+						+ ' '
+						+ date.toString()
+						+ ' №'
+						+ context.messages[i].Id;
+
 					html.push(
-						'<div>'
-							+ context.messages[i].Message
+						'<div'
+							+ ' class="panel"'
+							+ ' style="'
+								+ 'width:700px;border:1px solid #ccc;'
+								+ 'border-top-left-radius:0px;'
+								+ 'border-top-right-radius:0px"'
+						+ '>'
+							+ '<div'
+								+ ' class="panel-heading"'
+								+ ' style="'
+									+ 'background-color:#91C6F5;'
+									+ 'border-top-left-radius:0px;'
+									+ 'border-top-right-radius:0px"'
+							+ '>'
+								+ head
+						+ '</div>'
+							+ '<div class="panel-body" style="background-color:#FFFCEC">'
+								+ context.messages[i].Message
+							+ '</div>'
 						+ '</div>'
 					);
 				}

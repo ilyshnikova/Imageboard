@@ -10,7 +10,7 @@ sub add_message {
 	my $self = shift;
 	my $data = shift;
 
-	my ($text) = map {$data->{$_}} 'text';
+	my ($text, $user_name) = map {$data->{$_}} 'text', 'user_name';
 
 	$self->{'dbh'}->do("
 		lock table Messages write
@@ -24,9 +24,11 @@ sub add_message {
 
 	$self->{'dbh'}->do("
 		insert into
-			Messages(Id, Message, UserId, ParentMessageId, Time)
+			Messages(Id, Message, UserId, UserName, ParentMessageId, Time)
 		values
-			($new_id,". $self->{'dbh'}->quote($text) . ", 0, 0, now())
+			(
+				$new_id," . $self->{'dbh'}->quote($text) . ", 0, " . $self->{'dbh'}->quote($user_name) . ", 0, now()
+			)
 	");
 
 	$self->{'dbh'}->do("
@@ -47,6 +49,7 @@ sub get_messages {
 			Id,
 			convert(Message using utf8) as Message,
 			UserId,
+			UserName,
 			ParentMessageId,
 			unix_timestamp(Time) as Time
 		from

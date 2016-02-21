@@ -1,4 +1,4 @@
-rm -rf /etc/nginx/sites-enabled/* &&  ln -s /etc/nginx/sites-available/imageboard-nginx-config  /etc/nginx/sites-enabled/config
+rm -rf /etc/nginx/sites-enabled/* &&  ln -s /etc/nginx/sites-available/imageboard-nginx-config  /etc/nginx/sites-enabled/config && service nginx restart
 cat <<EOF | mysql -uroot
 create database if not exists imbdb;
 use imbdb;
@@ -14,6 +14,7 @@ create table if not exists Messages (
 	Id int(11) not null default 0,
 	Message blob not null,
 	UserId int(11) not null default 0,
+	UserName varchar(255) not null default '',
 	ParentMessageId int(11) not null default 0,
 	Time timestamp not null default 0,
 	primary key(Id)
