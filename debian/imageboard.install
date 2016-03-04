@@ -1,4 +1,4 @@
 imageboard-nginx-config /etc/nginx/sites-available/
 IMB /usr/share/perl5
-www/ /var/www/imageboard/public
+www/* /var/www/imageboard/public
 server.pl root/imageboard/
