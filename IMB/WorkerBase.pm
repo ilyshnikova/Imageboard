@@ -14,5 +14,24 @@ sub new {
 	return $self;
 }
 
+sub get_user_datails {
+	my $self = shift;
+	my $user_hash = shift;
+
+	if ($user_hash) {
+		return $self->{'dbh'}->selectrow_hashref("
+			select
+				*
+			from
+				Users
+			where
+				Hash = " . $self->{'dbh'}->quote($user_hash) . "
+		") || {};
+	} else {
+		return {};
+	}
+}
+
+
 1;
 

@@ -1,25 +1,29 @@
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+		<script src="http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js"></script>
+
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
 		<script type="text/javascript" src="states.js"></script>
+		<script type="text/javascript" src="html_elements.js"></script>
+		<script type="text/javascript" src="cookie_handling.js"></script>
+		<script type="text/javascript" src="md5.js"></script>
+
 		<script type="text/javascript" src="index.js"></script>
 		<link rel="stylesheet" type="text/css" href="menu.css">
 		<script type="text/javascript" src="menu.js"></script>
-<script src="http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js"></script>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-
-
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 	<style>
 		.menu {
 			position: fixed;
 			right: 2px;
 			top: 120px;
-			background: #;
 			z-index:99999;
 			background-color: #FFF;
 			display: block;
@@ -33,146 +37,49 @@
 	</head>
 
 	<body style="background-color:#F5F5F3">
-		<div class="menu">
-				<aside id="sidebar" class="sidebar sidebar-default open" role="navigation" style="width:300px;min-height:280px">
- 			<div class="sidebar-header header-cover" style="background-image: url(p.jpg);height: 46px;">
-				<a class="sidebar-brand">
-					Create Message
-				</a>
-			</div>
+		<div class="menu" id="send_message_box"></div>
+		<div id=menu></div>
 
-			<ul class="nav sidebar-nav" style="padding-right:10px; padding-left:10px;padding-bottom:7px">
-					<div class="input-group">
-						<span class="input-group-addon">Title</span>
-						<input
-							type="text"
-							class="form-control"
-							placeholder="title"
-							aria-describedby="basic-addon1"
-							id=send_message_user_name
-						>
-					</div>
-					<br>
-					<div class="input-group">
-						<span class="input-group-addon">Text</span>
-						<textarea
-							class="form-control"
-							id=message_text
-							placeholder="Text of the message..."
-							disabled
-						></textarea>
-					</div>
-					<br>
-					<div class="input-group">
-						<input type="file" class="filestyle" data-badge="false">
-					</div>
-					<br>
-					<li class="divider" style="width:300px; padding-right:0px"></li>
-
-					<li>
-						<button
-							class="btn btn-default"
-							id=send_message
-							type=button
-							style="background-image:linear-gradient(to bottom,#FFF 0,#FFF 100%)"
-						>
-							Send Message
-						</button>
-
-					</li>
-
-
-				</div>
-			</ul>
-		</aside>
-		</div>
-
-
-
-		<div class="sidebar-overlay"></div>
-		<aside id="sidebar" class="sidebar sidebar-default open" role="navigation" style="width:220px;height:100%;position:fixed">
-			<div class="sidebar-header header-cover" style="background-image: url(p.jpg);">
-				<div class="sidebar-image">
-					<img src="https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/user_male2-512.png">
-				</div>
-				<a class="sidebar-brand">
-					UserName
-				</a>
-			</div>
-
-			<ul class="nav sidebar-nav" style="position:fixed">
-				<li>
-					<a href="#">
-						<i class="sidebar-icon md-star"></i>
-							All boards
-					</a>
-				</li>
-				<li class="divider" style="width:220px"></li>
-				<li class="dropdown">
-					<a class="ripple-effect dropdown-toggle" href="#" data-toggle="dropdown">
-						All Messages
-						<b class="caret"></b>
-					</a>
-					<ul class="dropdown-menu">
-						<li>
-							<a href="#" tabindex="-1">
-								Your Messages
-							</a>
-						</li>
-						<li>
-							<a href="#" tabindex="-1">
-								Your Comments
-							</a>
-						</li>
-					</ul>
-				</li>
-				<li>
-					<a href="#">
-						All Images
-					</a>
-				</li>
-				<li>
-					<a href="#">
-						Answers
-						<span class="sidebar-badge">N</span>
-					</a>
-				</li>
-				<li>
-					<a href="#">
-						Follow Up
-						<span class="sidebar-badge">i</span>
-					</a>
-				</li>
-				<li class="divider" style="width:220px"></li>
-				<li class="dropdown">
-					<a class="ripple-effect dropdown-toggle" href="#" data-toggle="dropdown">
-						Profile
-						<b class="caret"></b>
-					</a>
-
-					<ul class="dropdown-menu">
-						<li>
-							<a href="#" tabindex="-1">
-								Settings
-							</a>
-						</li>
-						<li>
-							<a href="#" tabindex="-1">
-								Exit
-							</a>
-						</li>
-					</ul>
-				</li>
-
-			</ul>
-		</aside>
-		<div style="left:0px;width:220px;height:100%"></div>
 		<div class="wrapper" style="padding-left:15px">
 			<div class="constructor">
 				<div class="row" style="padding-bottom:20px">
-				<div class="container-fluidi">
-					<div style="margin:0px;font-size:50px;color:#000;background-size:contain;width:120px;height:90px;padding-left=0px"> </div>
+					<div id=addition_content></div>
+					<div class="container-fluid">
+						<div
+							class="page-header"
+							style="
+								font-size:30px;
+								color:#000;
+								background-size:contain;
+								margin:0px 0 10px;
+								position:fixed;
+								background-color:#F5F5F3;
+								width:700px
+							"
+							id=head
+						>
+						</div>
+						<div
+							style="
+								font-size:30px;
+								color:#000;
+								background-size:contain;
+								margin:10px 0 10px;
+								opacity:0;
+							"
+						>
+							Some text
+						</div>
+
+						<div class="side-body" style="padding-top:15px" id=content></div>
+
+
+	<!--				<div style="margin:0px;font-size:50px;color:#000;background-size:contain;width:120px;height:90px;padding-left=0px"> </div>
+
 					<div style="background:url(http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png);opacity:0.9;margin:0px;font-size:50px;color:#000;background-size:contain;width:1180px;height:90px;padding-left=0px;position:fixed;top:0px"> </div>
+
+
+
 
 					<div class="page-header" style="font-size:30px;color:#000;background-size:contain;margin:0px 0 10px;position:fixed;background-color:#F5F5F3;width:700px">
 						<span> Board Name </span>
@@ -185,7 +92,9 @@
 					<div class="side-body" style="padding-top:15px">
 						<div id=messages style="width:100%;">
 						</div>
-					</div>
+					</div> --!>
+
+
 				</div>
 			</div>
 		</div>

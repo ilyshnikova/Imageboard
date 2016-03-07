@@ -12,19 +12,21 @@ create table if not exists Boards (
 );
 create table if not exists Messages (
 	Id int(11) not null default 0,
+	BoardId int(11) not null default 0,
 	Message blob not null,
-	UserId int(11) not null default 0,
-	UserName varchar(255) not null default '',
+	UserHash varbinary(255) not null default '',
 	ParentMessageId int(11) not null default 0,
 	Time timestamp not null default 0,
-	primary key(Id)
+	primary key(Id),
+	key(BoardId)
 ) default charset=utf8;
 
 create table if not exists Users (
+	Hash varbinary(255) not null default '',
 	Id int(11) not null default 0,
 	Name varchar(255) not null default '',
 	Email varchar(255) not null default '',
-	primary key(Id)
+	primary key(Hash)
 );
 #
 # CREATE RELATIONS TABLES
@@ -46,6 +48,7 @@ create table if not exists CookieKeyByUserId (
 );
 EOF
 killall perl-fcgi-pm; perl /root/imageboard/server.pl
+
 
 
 

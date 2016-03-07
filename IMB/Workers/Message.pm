@@ -10,24 +10,29 @@ sub add_message {
 	my $self = shift;
 	my $data = shift;
 
-	my ($text, $user_name) = map {$data->{$_}} 'text', 'user_name';
+	my ($text, $user_hash, $board_id) = map {$data->{$_}} 'text', 'user_hash', 'board_id';
 
 	$self->{'dbh'}->do("
-		lock table Messages write
+		lock table
+			Messages
+		write
 	");
 
 	my ($max_id) = $self->{'dbh'}->selectrow_array("
-		select ifnull(max(Id), 0) from Messages
+		select
+			ifnull(max(Id), 0)
+		from
+			Messages
 	");
 
 	my $new_id = $max_id + 1;
 
 	$self->{'dbh'}->do("
 		insert into
-			Messages(Id, Message, UserId, UserName, ParentMessageId, Time)
+			Messages(Id, BoardId, Message, UserHash, ParentMessageId, Time)
 		values
 			(
-				$new_id," . $self->{'dbh'}->quote($text) . ", 0, " . $self->{'dbh'}->quote($user_name) . ", 0, now()
+				$new_id, $board_id, " . $self->{'dbh'}->quote($text) . ", " . $self->{'dbh'}->quote($user_hash) . ", 0, now()
 			)
 	");
 
@@ -46,14 +51,15 @@ sub get_messages {
 
 	return $self->{'dbh'}->selectall_arrayref("
 		select
-			Id,
-			convert(Message using utf8) as Message,
-			UserId,
-			UserName,
-			ParentMessageId,
-			unix_timestamp(Time) as Time
+			Messages.Id as Id,
+			convert(Messages.Message using utf8) as Message,
+			Messages.ParentMessageId as ParentMessageId,
+			unix_timestamp(Messages.Time) as Time,
+			Users.Name as UserName
 		from
 			Messages
+		inner join
+			Users on Messages.UserHash = Users.Hash
 		where
 			$condition
 	", {Slice => {}});
