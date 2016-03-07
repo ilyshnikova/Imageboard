@@ -47,12 +47,14 @@ State.prototype.init_context = function (state) {
 		}
 	}
 
-	this.context.exit_state = function (new_state) {
+	this.context.exit_state = function (new_state, depth) {
 		if (_this.state === state) {
 			_this.state = 'locked';
 			_this.params[state].on_exit(_this.context);
-			_this.context = _this.context.parent;
-			_this.params[_this.context.state].on_exit(_this.context);
+			for (var index = 0; index < depth; ++index) {
+				_this.context = _this.context.parent;
+				_this.params[_this.context.state].on_exit(_this.context);
+			}
 			_this.enter_state(new_state);
 		}
 	}
@@ -63,12 +65,21 @@ State.go_to = function (context, params) {
 		var new_state = call_or_get(params.new_state, context);
 		var type = call_or_get(params.type, context);
 
+		var depth = undefined;
+		if (params.depth) {
+			depth = call_or_get(params.depth, context);
+		} else {
+			depth = 1;
+		}
+
 		if (type == 'next') {
 			context.next(new_state);
 		} else if (type == 'substate') {
 			context.substate(new_state);
+		} else if (type == 'exit_state') {
+			context.exit_state(new_state, depth);
 		} else {
-			context.exit_state(new_state);
+			throw new Error("unsupported transaction type" + type);
 		}
 	}
 }
