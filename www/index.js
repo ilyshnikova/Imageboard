@@ -261,27 +261,50 @@ $(function() {
 				'container' : $('#content'),
 				'func' : function(context, container) {
 					context.board_id_by_name = {};
-					var board_list = '<tr>';
+					var board_list = '<div class="row" style="z-index: -1;">';
 					for (var index = 0; index < context.board_names.length; ++index) {
 						context.board_id_by_name[context.board_names[index].Name] = context.board_names[index].Id;
 						board_list += (
-							'<td><div class=board id="'
-							+ context.board_names[index].Name
-							+ '">'
-							+ context.board_names[index].Name
-							+ '</div></td>'
-							);
-						if (index + 1 != context.board_names.length && (index + 1) % 4 == 0) {
-							board_list += '</tr><tr>'
+							'<div class="col-sm-6 col-md-4" style="width: 345px;">'
+								+ '<div class="thumbnail" style="padding-left: 15px;width: 330px;">'
+									+ ' <img '
+										+ 'src="http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png"'
+										+ ' style="opacity:0.5"'
+									+ '>'
+									+ '<div class="caption">'
+										+ '<h3>Title of '
+											+ context.board_names[index].Name
+										+ '</h3>'
+										+ '<p>'
+											+ 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris lectus orci, viverra nec neque non, tincidunt commodo leo. Nullam eleifend velit purus, id aliquam elit venenatis sit amet. Cras vel nisl eget eros tempus viverra. Phasellus in enim et nulla tempor blandit. Donec at lectus sit amet velit faucibus tincidunt quis sed est. Mauris placerat purus odio. In egestas, velit quis congue sodales, turpis lacus pellentesque neque, quis accumsan orci nibh sed mauris. Sed sit amet pulvinar felis.'
+										+ '</p>'
+										+ '<p>'
+											+ '<a'
+												+ ' href="#"'
+												+ ' class="btn btn-default board"'
+												+ ' role="button"'
+												+ ' id="'
+													+ context.board_names[index].Name
+												+ '"'
+											+ '>'
+												+ 'Go!'
+											+ '</a>'
+										+ '</p>'
+      									+ '</div>'
+								+ '</div>'
+							+ '</div>'
+						);
+						if (index + 1 != context.board_names.length && (index + 1) % 3 == 0) {
+							board_list += '</div><div class="row" style="z-index: -1;">'
 						}
 					}
-					board_list += '</tr>';
+					board_list += '</div>';
 					container.append(`
 						<button type="button" class="btn btn-default" id=create_new_board>
-							<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Board
+							+ New Board
 						</button>
 					`);
-					container.append('<table>' + board_list + '</table>');
+					container.append(board_list);
 				},
 			}),
 			new GoTo({
