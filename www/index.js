@@ -265,9 +265,9 @@ $(function() {
 					for (var index = 0; index < context.board_names.length; ++index) {
 						context.board_id_by_name[context.board_names[index].Name] = context.board_names[index].Id;
 						board_list += (
-							'<td><div class=board id='
+							'<td><div class=board id="'
 							+ context.board_names[index].Name
-							+ '>'
+							+ '">'
 							+ context.board_names[index].Name
 							+ '</div></td>'
 							);
@@ -483,7 +483,7 @@ $(function() {
 				},
 			}),
 			new Timer({
-				'timeout' : 100,
+				'timeout' : 1,
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
