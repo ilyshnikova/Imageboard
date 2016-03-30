@@ -15,17 +15,36 @@ use JSON qw(from_json to_json);
 use FCGI::ProcManager qw(pm_manage pm_pre_dispatch pm_post_dispatch);
 use Carp::Always;
 use Encode;
+use IMB::Logger qw(LOGGER);
 
 use base 'Exporter';
 our @EXPORT_OK = qw(start_dispatch);
 
+$CGI::Simple::DISABLE_UPLOADS = 0;
+$CGI::Simple::POST_MAX = 20 * 1e6;
 
 sub process_request {
 	my $dbh = shift;
 
 	my $answer = eval {
 		my $cgi = new CGI::Simple;
+
 		my $data = from_json($cgi->param('json'), { utf8  => 1 });
+
+		$data->{'files'} = [];
+		my $file_index = 0;
+		while (1) {
+			my $filename = $cgi->param("file$file_index");
+			if ($filename) {
+				push(@{$data->{'files'}}, {
+					'fh' => $cgi->upload($filename),
+					'filename' => $filename,
+				});
+			} else {
+				last;
+			}
+			++$file_index;
+		}
 
 		lock_hash(%$data);
 
@@ -59,7 +78,7 @@ sub start_dispatch {
 
 	my $dbh = connect_to_mysql("imbdb");
 
-	reopen_std();
+#	reopen_std();
 
 	my $count = 1;
 

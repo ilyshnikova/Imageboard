@@ -506,7 +506,7 @@ $(function() {
 				},
 			}),
 			new Timer({
-				'timeout' : 1,
+				'timeout' : 100,
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
@@ -521,6 +521,9 @@ $(function() {
 						'user_hash' : read_cookie('user_hash'),
 						'board_id' : context.parent.parent.board_id,
 					};
+				},
+				'file_input' : function() {
+					return $('#image');
 				},
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::clean_message',
@@ -575,15 +578,37 @@ $(function() {
 						+ date.toString()
 						+ ' №'
 						+ context.messages[i].Id;
-
-					html.push(
-						 '<div class="media" style="width:700px">'
-							+ '<div class="media-left">'
-								+ '<a href="#">'
-									+ '<img class="media-object" src="p.svg" alt="..." style="width:100px">'
+					var image = '';
+					if (context.messages[i].Image) {
+						var image_name = (
+							'messages_images/'
+							+ context.messages[i].Id
+							+ '.png'
+						);
+						image = (
+							'<div class="media-left">'
+								+ '<a'
+							       		+ ' href="'
+										+ image_name
+									+ '"'
+									+ ' target="_blank"'
+								+ '>'
+									+ '<img'
+								       		+ ' class="media-object"'
+									       	+ ' src="'
+											+ image_name
+										+ '"'
+										+ ' style="width:100px"'
+									+ '>'
 								+ '</a>'
 							+ '</div>'
-							+ '<div class="media-body">'
+						);
+
+					}
+					html.push(
+						 '<div class="media" style="width:700px">'
+							+ image
+						 	+ '<div class="media-body">'
 								+ '<h5 class="media-heading">' + head  + '</h5>'
 								+ context.messages[i].Message
 								/*+ '<div class="media">'

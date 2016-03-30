@@ -5,6 +5,9 @@ use warnings;
 
 use POSIX qw(strftime);
 
+use base "Exporter";
+our @EXPORT_OK = qw(LOGGER);
+
 sub decode_message {
 	my $message = shift;
 

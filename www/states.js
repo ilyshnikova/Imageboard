@@ -245,18 +245,33 @@ function SendQuery(params) {
 
 SendQuery.prototype.on_enter = function(context) {
 	var _this = this;
-	var data = this.params.ajax_data(context);
-	data['client'] = 'browser';
-	data = JSON.stringify(data);
+	var form_data = new FormData();
+
+	if (this.params.ajax_data) {
+		ajax_data = this.params.ajax_data(context);
+		ajax_data['client'] = 'browser';
+		form_data.append('json', JSON.stringify(ajax_data));
+//		form_data = {"json" : JSON.stringify(ajax_data)};
+	}
+
+	if (this.params.file_input) {
+		var file_input = call_or_get(this.params.file_input, context);
+		var files = file_input[0].files;
+		for (var index = 0; index < files.length; ++index) {
+			var file = files[index];
+			form_data.append('file' + index, file, '1.txt');
+		}
+	}
+
 	this.started = 0;
 	this.aborted = false;
 	this.ajax = $.ajax({
-		method: "GET",
-		url: "http://192.168.56.10/fcgi-bin",
+		url: "/fcgi-bin/",
+		data: form_data,
 		cache: false,
-		data: {
-			"json" : data,
-		},
+		contentType: false,
+		processData: false,
+		type: 'POST',
 		success: function(response) {
 			_this.started = 1;
 			if (response.status) {

@@ -27,6 +27,7 @@ create table if not exists Messages (
 	UserHash varbinary(255) not null default '',
 	ParentMessageId int(11) not null default 0,
 	Time timestamp not null default 0,
+	Image tinyint(4) not null default 0,
 	primary key(Id),
 	key(BoardId),
 	foreign key(BoardId)

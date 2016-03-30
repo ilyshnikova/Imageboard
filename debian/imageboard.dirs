@@ -1,1 +1,3 @@
 root/imageboard
+/var/www/imageboard/public/messages_images
+/var/www/imageboard/public/boards_images
