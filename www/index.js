@@ -276,7 +276,7 @@ $(function() {
 											+ context.board_names[index].Name
 										+ '</h3>'
 										+ '<p>'
-											+ 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris lectus orci, viverra nec neque non, tincidunt commodo leo. Nullam eleifend velit purus, id aliquam elit venenatis sit amet. Cras vel nisl eget eros tempus viverra. Phasellus in enim et nulla tempor blandit. Donec at lectus sit amet velit faucibus tincidunt quis sed est. Mauris placerat purus odio. In egestas, velit quis congue sodales, turpis lacus pellentesque neque, quis accumsan orci nibh sed mauris. Sed sit amet pulvinar felis.'
+											+ context.board_names[index].Title
 										+ '</p>'
 										+ '<p>'
 											+ '<a'
@@ -361,6 +361,20 @@ $(function() {
 								+ ' id=new_board_name'
 							+ '>'
 						+ '</div><br>'
+						+ '<div class="input-group">'
+							+'<span class="input-group-addon" id="basic-addon1">'
+										+ 'Title'
+							+ '</span>'
+							+'<input'
+
+								+ ' type="text"'
+								+ ' class="form-control"'
+								+ ' placeholder="new_board_title"'
+								+ ' aria-describedby="basic-addon1"'
+								+ ' id=new_board_title'
+							+ '>'
+						+ '</div><br>'
+
 					);
 				},
 				'buttons' : '<button id=Ok type="button" class="btn btn-default">Ok</button>',
@@ -407,6 +421,7 @@ $(function() {
 					'module' : 'Board',
 					'type' : 'add',
 					'name' : $('#new_board_name').val(),
+					'title' : $('#new_board_title').val(),
 				};
 			},
 			'write_to' : 'board_id',
@@ -579,7 +594,7 @@ $(function() {
 						+ ' №'
 						+ context.messages[i].Id;
 					var image = '';
-					if (context.messages[i].Image) {
+					if (context.messages[i].Image == "1") {
 						var image_name = (
 							'messages_images/'
 							+ context.messages[i].Id
@@ -646,6 +661,62 @@ $(function() {
 				'new_state' : 'draw_menu::edit_board::listen',
 			}),
 		]),
+		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'Message',
+						'type' : 'get',
+						'condition' : "Messages.UserHash='" + read_cookie('user_hash') + "'",
+					};
+				},
+				'write_to' : 'messages',
+				'type' : 'next',
+				'new_state' : 'draw_menu::draw_users_messages',
+			}),
+		])),
+		'draw_menu::draw_users_messages' :  new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new Builder({
+				'container' :function() {
+					return $('#content');
+				},
+				'func' : function (context, container) {
+					var messages = "";
+					for (var i = 0; i < context.messages.length; ++i) {
+						var date = new Date(context.messages[i].Time*1000);
+						var head = context.messages[i].UserName
+							+ ' '
+							+ date.toString()
+							+ ' №'
+							+ context.messages[i].Id;
+
+						messages += '<div class="media" style="width:700px">'
+						 	+ '<div class="media-body">'
+								+ '<h5 class="media-heading">' + head  + '</h5>'
+								+ context.messages[i].Message
+							+ '</div>'
+						+ '</div>'
+					}
+
+					container.append(messages);
+				}
+			}),
+			new Builder({
+				'container' : function() {
+					return $('#head');
+				},
+				'func' : function(context, container) {
+					container.append('<h3>Your messages</h3>');
+				}
+			}),
+			new GoTo({
+				'type' : 'substate',
+				'new_state' : 'draw_menu::draw_users_messages::listen',
+			}),
+		])),
+		'draw_menu::draw_users_messages::listen' : new Combine(get_menu_bind_config(1, 'exit_state').concat([])),
+
+
 	});
 });
 

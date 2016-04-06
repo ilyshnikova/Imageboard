@@ -15,7 +15,7 @@ sub add_message {
 
 	my $image = 0;
 
-	if ($data->{'files'}) {
+	if ($data->{'files'}->[0]) {
 		$image = 1;
 	}
 
@@ -72,7 +72,8 @@ sub get_messages {
 			Messages.ParentMessageId as ParentMessageId,
 			unix_timestamp(Messages.Time) as Time,
 			Messages.Image as Image,
-			Users.Name as UserName
+			Users.Name as UserName,
+			Users.Hash as UserHash
 		from
 			Messages
 		inner join
@@ -81,6 +82,7 @@ sub get_messages {
 			$condition
 	", {Slice => {}});
 }
+
 
 sub respond {
 	my $self = shift;

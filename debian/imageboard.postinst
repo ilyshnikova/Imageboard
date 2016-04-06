@@ -8,6 +8,7 @@ use imbdb;
 create table if not exists Boards (
 	Id int(11) not null default 0,
 	Name varchar(255) not null default '',
+	Title blob not null,
 	primary key(Id)
 );
 
