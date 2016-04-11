@@ -22,17 +22,6 @@ function get_send_message_html() {
 			       	+ ' style="padding-right:10px;padding-left:10px;padding-bottom:7px"'
 			+ '>'
 				+ '<div class="input-group">'
-						+ '<span class="input-group-addon">Title</span>'
-						+ '<input'
-							+ ' type="text"'
-							+ ' class="form-control"'
-							+ ' placeholder="title"'
-							+ ' aria-describedby="basic-addon1"'
-							+ ' id=send_message_user_name'
-						+ '>'
-					+ '</div>'
-					+ '<br>'
-					+ '<div class="input-group">'
 						+ '<span class="input-group-addon">Text</span>'
 						+ '<textarea'
 							+ ' class="form-control"'
@@ -40,16 +29,16 @@ function get_send_message_html() {
 							+ ' placeholder="Text of the message..."'
 							+ ' disabled'
 						+ '></textarea>'
-					+ '</div>'
-					+ '<br>'
-					+ '<div class="input-group">'
-						+ '<input type="file" class="filestyle" data-badge="false">'
-					+ '</div>'
-					+ '<br>'
-					+ '<li class="divider" style="width:300px; padding-right:0px"></li>'
-					+ '<li>'
-						+ '<button'
-							+ ' class="btn btn-default"'
+				+ '</div>'
+				+ '<br>'
+				+ '<div class="input-group">'
+					+ '<input type="file" class="filestyle" data-badge="false" id="image">'
+				+ '</div>'
+				+ '<br>'
+				+ '<li class="divider" style="width:300px; padding-right:0px"></li>'
+				+ '<li>'
+					+ '<button'
+						+ ' class="btn btn-default"'
 							+ ' id=send_message'
 							+ ' type=button'
 							+ ' style="background-image:linear-gradient(to bottom,#FFF 0,#FFF 100%)"'
@@ -67,7 +56,7 @@ function side_menu() {
 	return `
 		<div class="sidebar-overlay"></div>
 		<aside id="sidebar" class="sidebar sidebar-default open" role="navigation" style="width:220px;height:100%;position:fixed">
-			<div class="sidebar-header header-cover" style="background-image: url(p.jpg);">
+			<div class="sidebar-header header-cover" style="background-image: url(https://41.media.tumblr.com/550002b988539d7ae1140a384f0c5dbf/tumblr_ne7qri0o8c1tli2c9o1_1280.png);">
 				<div class="sidebar-image">
 					<img src="https://cdn2.iconfinder.com/data/icons/ios-7-icons/50/user_male2-512.png">
 				</div>
@@ -207,7 +196,7 @@ function get_board_head(picture_ref) {
 					font-size:50px;
 					color:#000;
 					background-size:contain;
-					width:1180px;
+					width:1020px;
 					height:90px;
 					padding-left=0px;
 					position:fixed;

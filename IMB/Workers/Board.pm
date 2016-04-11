@@ -13,7 +13,8 @@ sub get_boards_names {
 	return $self->{'dbh'}->selectall_arrayref("
 		select
 			Id,
-			convert(Name using utf8) as Name
+			convert(Name using utf8) as Name,
+			convert(Title using utf8) as Title
 		from
 			Boards
 	", {Slice => {}});
@@ -23,7 +24,7 @@ sub add_new_board {
 	my $self = shift;
 	my $data = shift;
 
-	my $name = $data->{'name'};
+	my ($name, $title) = map {$data->{$_}} 'name', 'title';
 
 
 	$self->{'dbh'}->do("
@@ -43,10 +44,10 @@ sub add_new_board {
 
 	$self->{'dbh'}->do("
 		insert into
-			Boards(Id, Name)
+			Boards(Id, Name, Title)
 		values
 			(
-				$new_id, " . $self->{'dbh'}->quote($name) . "
+				$new_id, " . $self->{'dbh'}->quote($name) . ", " .  $self->{'dbh'}->quote($title) . "
 			)
 	");
 

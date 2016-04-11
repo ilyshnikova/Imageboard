@@ -261,27 +261,50 @@ $(function() {
 				'container' : $('#content'),
 				'func' : function(context, container) {
 					context.board_id_by_name = {};
-					var board_list = '<tr>';
+					var board_list = '<div class="row" style="z-index: -1;">';
 					for (var index = 0; index < context.board_names.length; ++index) {
 						context.board_id_by_name[context.board_names[index].Name] = context.board_names[index].Id;
 						board_list += (
-							'<td><div class=board id="'
-							+ context.board_names[index].Name
-							+ '">'
-							+ context.board_names[index].Name
-							+ '</div></td>'
-							);
-						if (index + 1 != context.board_names.length && (index + 1) % 4 == 0) {
-							board_list += '</tr><tr>'
+							'<div class="col-sm-6 col-md-4" style="width: 345px;">'
+								+ '<div class="thumbnail" style="padding-left: 15px;width: 330px;">'
+									+ ' <img '
+										+ 'src="http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png"'
+										+ ' style="opacity:0.5"'
+									+ '>'
+									+ '<div class="caption">'
+										+ '<h3>Title of '
+											+ context.board_names[index].Name
+										+ '</h3>'
+										+ '<p>'
+											+ context.board_names[index].Title
+										+ '</p>'
+										+ '<p>'
+											+ '<a'
+												+ ' href="#"'
+												+ ' class="btn btn-default board"'
+												+ ' role="button"'
+												+ ' id="'
+													+ context.board_names[index].Name
+												+ '"'
+											+ '>'
+												+ 'Go!'
+											+ '</a>'
+										+ '</p>'
+      									+ '</div>'
+								+ '</div>'
+							+ '</div>'
+						);
+						if (index + 1 != context.board_names.length && (index + 1) % 3 == 0) {
+							board_list += '</div><div class="row" style="z-index: -1;">'
 						}
 					}
-					board_list += '</tr>';
+					board_list += '</div>';
 					container.append(`
 						<button type="button" class="btn btn-default" id=create_new_board>
-							<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Board
+							+ New Board
 						</button>
 					`);
-					container.append('<table>' + board_list + '</table>');
+					container.append(board_list);
 				},
 			}),
 			new GoTo({
@@ -338,6 +361,20 @@ $(function() {
 								+ ' id=new_board_name'
 							+ '>'
 						+ '</div><br>'
+						+ '<div class="input-group">'
+							+'<span class="input-group-addon" id="basic-addon1">'
+										+ 'Title'
+							+ '</span>'
+							+'<input'
+
+								+ ' type="text"'
+								+ ' class="form-control"'
+								+ ' placeholder="new_board_title"'
+								+ ' aria-describedby="basic-addon1"'
+								+ ' id=new_board_title'
+							+ '>'
+						+ '</div><br>'
+
 					);
 				},
 				'buttons' : '<button id=Ok type="button" class="btn btn-default">Ok</button>',
@@ -384,6 +421,7 @@ $(function() {
 					'module' : 'Board',
 					'type' : 'add',
 					'name' : $('#new_board_name').val(),
+					'title' : $('#new_board_title').val(),
 				};
 			},
 			'write_to' : 'board_id',
@@ -483,7 +521,7 @@ $(function() {
 				},
 			}),
 			new Timer({
-				'timeout' : 1,
+				'timeout' : 100,
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
@@ -498,6 +536,9 @@ $(function() {
 						'user_hash' : read_cookie('user_hash'),
 						'board_id' : context.parent.parent.board_id,
 					};
+				},
+				'file_input' : function() {
+					return $('#image');
 				},
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::clean_message',
@@ -552,15 +593,37 @@ $(function() {
 						+ date.toString()
 						+ ' №'
 						+ context.messages[i].Id;
-
-					html.push(
-						 '<div class="media" style="width:700px">'
-							+ '<div class="media-left">'
-								+ '<a href="#">'
-									+ '<img class="media-object" src="p.svg" alt="..." style="width:100px">'
+					var image = '';
+					if (context.messages[i].Image == "1") {
+						var image_name = (
+							'messages_images/'
+							+ context.messages[i].Id
+							+ '.png'
+						);
+						image = (
+							'<div class="media-left">'
+								+ '<a'
+							       		+ ' href="'
+										+ image_name
+									+ '"'
+									+ ' target="_blank"'
+								+ '>'
+									+ '<img'
+								       		+ ' class="media-object"'
+									       	+ ' src="'
+											+ image_name
+										+ '"'
+										+ ' style="width:100px"'
+									+ '>'
 								+ '</a>'
 							+ '</div>'
-							+ '<div class="media-body">'
+						);
+
+					}
+					html.push(
+						 '<div class="media" style="width:700px">'
+							+ image
+						 	+ '<div class="media-body">'
 								+ '<h5 class="media-heading">' + head  + '</h5>'
 								+ context.messages[i].Message
 								/*+ '<div class="media">'
@@ -598,6 +661,62 @@ $(function() {
 				'new_state' : 'draw_menu::edit_board::listen',
 			}),
 		]),
+		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'Message',
+						'type' : 'get',
+						'condition' : "Messages.UserHash='" + read_cookie('user_hash') + "'",
+					};
+				},
+				'write_to' : 'messages',
+				'type' : 'next',
+				'new_state' : 'draw_menu::draw_users_messages',
+			}),
+		])),
+		'draw_menu::draw_users_messages' :  new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new Builder({
+				'container' :function() {
+					return $('#content');
+				},
+				'func' : function (context, container) {
+					var messages = "";
+					for (var i = 0; i < context.messages.length; ++i) {
+						var date = new Date(context.messages[i].Time*1000);
+						var head = context.messages[i].UserName
+							+ ' '
+							+ date.toString()
+							+ ' №'
+							+ context.messages[i].Id;
+
+						messages += '<div class="media" style="width:700px">'
+						 	+ '<div class="media-body">'
+								+ '<h5 class="media-heading">' + head  + '</h5>'
+								+ context.messages[i].Message
+							+ '</div>'
+						+ '</div>'
+					}
+
+					container.append(messages);
+				}
+			}),
+			new Builder({
+				'container' : function() {
+					return $('#head');
+				},
+				'func' : function(context, container) {
+					container.append('<h3>Your messages</h3>');
+				}
+			}),
+			new GoTo({
+				'type' : 'substate',
+				'new_state' : 'draw_menu::draw_users_messages::listen',
+			}),
+		])),
+		'draw_menu::draw_users_messages::listen' : new Combine(get_menu_bind_config(1, 'exit_state').concat([])),
+
+
 	});
 });
 

@@ -8,18 +8,9 @@ use imbdb;
 create table if not exists Boards (
 	Id int(11) not null default 0,
 	Name varchar(255) not null default '',
+	Title blob not null,
 	primary key(Id)
 );
-create table if not exists Messages (
-	Id int(11) not null default 0,
-	BoardId int(11) not null default 0,
-	Message blob not null,
-	UserHash varbinary(255) not null default '',
-	ParentMessageId int(11) not null default 0,
-	Time timestamp not null default 0,
-	primary key(Id),
-	key(BoardId)
-) default charset=utf8;
 
 create table if not exists Users (
 	Hash varbinary(255) not null default '',
@@ -28,24 +19,26 @@ create table if not exists Users (
 	Email varchar(255) not null default '',
 	primary key(Hash)
 );
-#
-# CREATE RELATIONS TABLES
-#
-create table if not exists BoardIdByMessagesId (
+
+create table if not exists Messages (
+	Id int(11) not null default 0,
 	BoardId int(11) not null default 0,
-	MessageId int(11) not null default 0,
-	primary key(BoardId, MessageId)
-);
-create table if not exists UserIdByMessagesId (
-	UserId int(11) not null default 0,
-	MessageId int(11) not null default 0,
-	primary key(UserId, MessageId)
-);
-create table if not exists CookieKeyByUserId (
-	UserId int(11) not null default 0,
-	CookieKey int(11) not null default 0,
-	primary key(CookieKey, UserId)
-);
+	Message blob not null,
+	Title blob not null,
+	UserHash varbinary(255) not null default '',
+	ParentMessageId int(11) not null default 0,
+	Time timestamp not null default 0,
+	Image tinyint(4) not null default 0,
+	primary key(Id),
+	key(BoardId),
+	foreign key(BoardId)
+		references Boards(Id)
+		on delete cascade,
+	foreign key(UserHash)
+		references Users(Hash)
+		on delete cascade
+) default charset=utf8;
+
 EOF
 killall perl-fcgi-pm; perl /root/imageboard/server.pl
 
