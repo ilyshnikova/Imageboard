@@ -59,6 +59,19 @@ sub add_message {
 	return $new_id;
 }
 
+
+sub delete_messages {
+	my $self = shift;
+	my $data = shift;
+
+	my $condition = $data->{'condition'};
+
+	$self->{'dbh'}->do("delete from Messages where " . $condition);
+
+	return 1;
+}
+
+
 sub get_messages {
 	my $self = shift;
 	my $data = shift;
@@ -93,6 +106,8 @@ sub respond {
 		return {'message_id' => $new_id};
 	} elsif ($data->{'type'} eq 'get') {
 		return $self->get_messages($data);
+	} elsif ($data->{'type'} eq 'delete') {
+		return $self->delete_messages($data);
 	} else {
 		die "incorrect type";
 	}

@@ -681,7 +681,7 @@ $(function() {
 					return $('#content');
 				},
 				'func' : function (context, container) {
-					var messages = "";
+					var messages = '<table cellpadding=10px>';
 					for (var i = 0; i < context.messages.length; ++i) {
 						var date = new Date(context.messages[i].Time*1000);
 						var head = context.messages[i].UserName
@@ -690,15 +690,32 @@ $(function() {
 							+ ' №'
 							+ context.messages[i].Id;
 
-						messages += '<div class="media" style="width:700px">'
-						 	+ '<div class="media-body">'
-								+ '<h5 class="media-heading">' + head  + '</h5>'
-								+ context.messages[i].Message
-							+ '</div>'
-						+ '</div>'
+						messages +=
+							'<tr>'
+								+ '<td style="padding-left:10px; padding-top:10px">'
+									+ '<div class="media" style="width:700px">'
+								 		+ '<div class="media-body">'
+											+ '<h5 class="media-heading">'
+												+ head
+											+ '</h5>'
+											+ context.messages[i].Message
+										+ '</div>'
+									+ '</div>'
+								+ '</td>'
+								+ '<td>'
+									+ '<span'
+										+ ' class="label label-primary"'
+									       	+ ' id=' + context.messages[i].Id
+									+ '>'
+										+ 'Delete'
+									+ '</span>'
+								+ '</td>'
+
+							+ '</tr>'
+
 					}
 
-					container.append(messages);
+					container.append(messages + '</table>');
 				}
 			}),
 			new Builder({
@@ -714,9 +731,31 @@ $(function() {
 				'new_state' : 'draw_menu::draw_users_messages::listen',
 			}),
 		])),
-		'draw_menu::draw_users_messages::listen' : new Combine(get_menu_bind_config(1, 'exit_state').concat([])),
+		'draw_menu::draw_users_messages::listen' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new Binder({
+				'action' : 'click',
+				'target' : function() {
+					return $('.label');
+				},
+				'write_to' : 'message',
+				'type' : 'next',
+				'new_state' : 'draw_menu::draw_menu::delete_message',
+			}),
 
-
+		])),
+		'draw_menu::draw_menu::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function (context) {
+					return {
+						'module' : 'Message',
+						'type' : 'delete',
+						'condition' : 'Id=' + context.message.attr('id'),
+					};
+				},
+				'type' : 'exit_state',
+				'new_state' : 'draw_menu::show_all_messages',
+			}),
+		])),
 	});
 });
 
