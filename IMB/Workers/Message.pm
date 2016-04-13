@@ -59,6 +59,39 @@ sub add_message {
 	return $new_id;
 }
 
+
+sub delete_messages {
+	my $self = shift;
+	my $data = shift;
+
+	my $condition = $data->{'condition'};
+
+
+	$self->{'dbh'}->do("
+		lock tables
+			Messages write,
+			Users write
+	");
+
+
+	my $message_information = $self->get_messages($data);
+
+	if (scalar($message_information)) {
+		$self->{'dbh'}->do("delete from Messages where " . $condition);
+
+		if ($message_information->[0]->{'Image'}) {
+			`rm /root/imageboard/messages_images/$message_information->[0]->{'Id'}.png`;
+		}
+	}
+	$self->{'dbh'}->do("
+		unlock tables
+	");
+
+
+	return 1;
+}
+
+
 sub get_messages {
 	my $self = shift;
 	my $data = shift;
@@ -93,6 +126,8 @@ sub respond {
 		return {'message_id' => $new_id};
 	} elsif ($data->{'type'} eq 'get') {
 		return $self->get_messages($data);
+	} elsif ($data->{'type'} eq 'delete') {
+		return $self->delete_messages($data);
 	} else {
 		die "incorrect type";
 	}
