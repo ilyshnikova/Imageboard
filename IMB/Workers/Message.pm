@@ -66,7 +66,27 @@ sub delete_messages {
 
 	my $condition = $data->{'condition'};
 
-	$self->{'dbh'}->do("delete from Messages where " . $condition);
+
+	$self->{'dbh'}->do("
+		lock tables
+			Messages write,
+			Users write
+	");
+
+
+	my $message_information = $self->get_messages($data);
+
+	if (scalar($message_information)) {
+		$self->{'dbh'}->do("delete from Messages where " . $condition);
+
+		if ($message_information->[0]->{'Image'}) {
+			`rm /root/imageboard/messages_images/$message_information->[0]->{'Id'}.png`;
+		}
+	}
+	$self->{'dbh'}->do("
+		unlock tables
+	");
+
 
 	return 1;
 }

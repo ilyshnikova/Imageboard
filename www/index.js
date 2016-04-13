@@ -689,11 +689,39 @@ $(function() {
 							+ date.toString()
 							+ ' №'
 							+ context.messages[i].Id;
+						var image = '';
+						if (context.messages[i].Image == "1") {
+							var image_name = (
+								'messages_images/'
+								+ context.messages[i].Id
+								+ '.png'
+							);
+							image = (
+								'<div class="media-left">'
+									+ '<a'
+										+ ' href="'
+											+ image_name
+										+ '"'
+										+ ' target="_blank"'
+									+ '>'
+										+ '<img'
+											+ ' class="media-object"'
+											+ ' src="'
+												+ image_name
+											+ '"'
+											+ ' style="width:100px"'
+										+ '>'
+									+ '</a>'
+								+ '</div>'
+							);
+						}
+
 
 						messages +=
 							'<tr>'
 								+ '<td style="padding-left:10px; padding-top:10px">'
 									+ '<div class="media" style="width:700px">'
+										+ image
 								 		+ '<div class="media-body">'
 											+ '<h5 class="media-heading">'
 												+ head
@@ -749,7 +777,7 @@ $(function() {
 					return {
 						'module' : 'Message',
 						'type' : 'delete',
-						'condition' : 'Id=' + context.message.attr('id'),
+						'condition' : 'Messages.Id=' + context.message.attr('id'),
 					};
 				},
 				'type' : 'exit_state',

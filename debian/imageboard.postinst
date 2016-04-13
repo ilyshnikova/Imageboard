@@ -40,6 +40,7 @@ create table if not exists Messages (
 ) default charset=utf8;
 
 EOF
+echo "finish tables creating"
 killall perl-fcgi-pm; perl /root/imageboard/server.pl
 
 
