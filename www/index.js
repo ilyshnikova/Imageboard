@@ -61,7 +61,7 @@ function get_menu_bind_config(depth, type) {
 			},
 		    	'type' : type,
 			'depth' : depth,
-		    	'new_state' : 'draw_menu::show_exit',
+		    	'new_state' : 'draw_menu::exit',
 		}),
 	];
 }
@@ -261,18 +261,32 @@ $(function() {
 				'container' : $('#content'),
 				'func' : function(context, container) {
 					context.board_id_by_name = {};
+					context.image_by_board_id = {};
 					var board_list = '<div class="row" style="z-index: -1;">';
 					for (var index = 0; index < context.board_names.length; ++index) {
-						context.board_id_by_name[context.board_names[index].Name] = context.board_names[index].Id;
+						context.board_id_by_name[context.board_names[index].Name] =
+							context.board_names[index].Id;
+						context.image_by_board_id[context.board_names[index].Id] =
+							context.board_names[index].Image
+						image = "";
+
+						if (context.board_names[index].Image == 1) {
+							image =  ' <img '
+										+ 'src=boards_images/'
+											+ context.board_names[index].Id
+											+ '.png'
+				//http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png"'
+										+ ' style="opacity:0.5"'
+									+ '>'
+
+						}
+
 						board_list += (
 							'<div class="col-sm-6 col-md-4" style="width: 345px;">'
 								+ '<div class="thumbnail" style="padding-left: 15px;width: 330px;">'
-									+ ' <img '
-										+ 'src="http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png"'
-										+ ' style="opacity:0.5"'
-									+ '>'
+									+ image
 									+ '<div class="caption">'
-										+ '<h3>Title of '
+										+ '<h3>'
 											+ context.board_names[index].Name
 										+ '</h3>'
 										+ '<p>'
@@ -335,7 +349,13 @@ $(function() {
 			new Executer(function(context) {
 				context.parent.parent.board_name = context.chosen_board_name.attr('id');
 				context.parent.parent.board_id =
-					context.parent.board_id_by_name[context.parent.parent.board_name];
+					context.parent.board_id_by_name[
+						context.parent.parent.board_name
+					];
+				context.parent.parent.image =
+					context.parent.image_by_board_id[
+						context.parent.parent.board_id
+					];
 			}),
 			new GoTo({
 				'type' : 'exit_state',
@@ -374,6 +394,10 @@ $(function() {
 								+ ' id=new_board_title'
 							+ '>'
 						+ '</div><br>'
+						+ '<div class="input-group">'
+							+ '<input type="file" class="filestyle" data-badge="false" id="image">'
+						+ '</div>'
+
 
 					);
 				},
@@ -424,13 +448,18 @@ $(function() {
 					'title' : $('#new_board_title').val(),
 				};
 			},
-			'write_to' : 'board_id',
+			'file_input' : function() {
+				return $('#image');
+			},
+
+			'write_to' : 'board_info',
 			'type' : 'next',
 			'new_state' : 'draw_menu::draw_boards_names::create_new_board_dialog::save_board_id',
 		}),
 		'draw_menu::draw_boards_names::create_new_board_dialog::save_board_id' : new Combine([
 			new Executer(function(context) {
-				context.parent.parent.parent.board_id = context.board_id;
+				context.parent.parent.parent.board_id = context.board_info.Id;
+				context.parent.parent.parent.image = context.board_info.Image;
 			}),
 			new GoTo({
 				'type' : 'exit_state',
@@ -452,34 +481,40 @@ $(function() {
 					return $('#addition_content');
 				},
 				'func' : function(context, container) {
-					container.append(`
-						<div
-							style="
-								margin:0px;
-								font-size:50px;
-								color:#000;
-								background-size:contain;
-								width:120px;
-								height:90px;
-								padding-left=0px
-							"
-						> </div>
-						<div
-							style="
-								background:url(http://rick-morty.ru/wp-content/uploads/2014/07/cropped-mr-meeseeks-wallpaper-11.png);
-								opacity:0.9;
-								margin:0px;
-								font-size:50px;
-								color:#000;
-								background-size:contain;
-								width:1180px;
-								height:90px;
-								padding-left=0px;
-								position:fixed;
-								top:0px
-							"
-						> </div>
-					`);
+					if (context.parent.image == 0) {
+						return;
+					}
+					container.append(
+						'<div'
+							+ ' style="'
+								+ 'margin:0px;'
+								+ 'font-size:50px;'
+								+ 'color:#000;'
+								+ 'background-size:contain;'
+								+ 'width:120px;'
+								+ 'height:90px;'
+								+ 'padding-left=0px'
+							+ '"'
+						+ '> </div>'
+						+ '<div'
+							+ ' style="'
+								+ 'background-image:'
+										+ 'url(boards_images\/'
+											+ context.parent.board_id
+								+ '.png);'
+								+ 'opacity:0.9;'
+								+ 'margin:0px;'
+								+ 'font-size:50px;'
+								+ 'color:#000;'
+								+ 'background-size:contain;'
+								+ 'width:1180px;'
+								+ 'height:90px;'
+								+ 'padding-left:0px;'
+								+ 'position:fixed;'
+								+ 'top:0px'
+							+ '"'
+						+ '> </div>'
+					);
 				}
 			}),
 			new Builder({
@@ -571,12 +606,14 @@ $(function() {
 				'ajax_data' : function(context) {
 					return {
 						'module' : 'Message',
-						'type' : 'get',
+						'type' : 'get_messages_for_board',
 						'board_name' : context.board_name,
+						'board_id' : context.parent.parent.board_id,
 						'condition' : 'BoardId=' + context.parent.parent.board_id,
+						'user_hash' : read_cookie('user_hash'),
 					};
 				},
-				'write_to' : 'messages',
+				'write_to' : 'board_content',
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::draw_messages',
 			}),
@@ -586,18 +623,19 @@ $(function() {
 		'draw_menu::edit_board::draw_messages' : new Combine([
 			new Executer(function(context) {
 				var html = [];
-				for (var i = 0; i < context.messages.length; ++i) {
-					var date = new Date(context.messages[i].Time*1000);
-					var head = context.messages[i].UserName
+				var messages = context.board_content.Messages;
+				for (var i = 0; i < messages.length; ++i) {
+					var date = new Date(messages[i].Time*1000);
+					var head = messages[i].UserName
 						+ ' '
 						+ date.toString()
 						+ ' №'
-						+ context.messages[i].Id;
+						+ messages[i].Id;
 					var image = '';
-					if (context.messages[i].Image == "1") {
+					if (messages[i].Image == "1") {
 						var image_name = (
 							'messages_images/'
-							+ context.messages[i].Id
+							+ messages[i].Id
 							+ '.png'
 						);
 						image = (
@@ -625,7 +663,7 @@ $(function() {
 							+ image
 						 	+ '<div class="media-body">'
 								+ '<h5 class="media-heading">' + head  + '</h5>'
-								+ context.messages[i].Message
+								+ messages[i].Message
 								/*+ '<div class="media">'
 									+ '<div class="media-left">'
 										+ '<a href="#">'
@@ -634,7 +672,7 @@ $(function() {
 									+ '</div>'
 									+ '<div class="media-body">'
 										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ context.messages[i].Message
+										+ messages[i].Message
 									+ '</div>'
 								+ '</div>'
 								+ '<div class="media">'
@@ -645,7 +683,7 @@ $(function() {
 									+ '</div>'
 									+ '<div class="media-body">'
 										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ context.messages[i].Message
+										+ .messages[i].Message
 									+ '</div>'
 								+ '</div>'*/
 
@@ -654,14 +692,19 @@ $(function() {
 						+ '</div>'
 					);
 				}
-				$('#messages').html(html.join(""));
+				$('#messages').html(
+					'<h3>Visitors number: '
+					+ context.board_content.BoardsVisitors
+					+ ' </h3>'
+					+ html.join("")
+				);
 			}),
 			new GoTo({
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::listen',
 			}),
 		]),
-		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(0, 'exit_state').concat([
 			new SendQuery({
 				'ajax_data' : function(context) {
 					return {
@@ -675,13 +718,18 @@ $(function() {
 				'new_state' : 'draw_menu::draw_users_messages',
 			}),
 		])),
-		'draw_menu::draw_users_messages' :  new Combine(get_menu_bind_config(1, 'exit_state').concat([
+		'draw_menu::draw_users_messages' :  new Combine(get_menu_bind_config(0, 'exit_state').concat([
 			new Builder({
 				'container' :function() {
 					return $('#content');
 				},
 				'func' : function (context, container) {
 					var messages = '<table cellpadding=10px>';
+					if (!context.messages.length) {
+						container.append('You have no message.');
+					}
+
+
 					for (var i = 0; i < context.messages.length; ++i) {
 						var date = new Date(context.messages[i].Time*1000);
 						var head = context.messages[i].UserName
@@ -767,11 +815,11 @@ $(function() {
 				},
 				'write_to' : 'message',
 				'type' : 'next',
-				'new_state' : 'draw_menu::draw_menu::delete_message',
+				'new_state' : 'draw_menu::draw_users_messages::delete_message',
 			}),
 
 		])),
-		'draw_menu::draw_menu::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+		'draw_menu::draw_users_messages::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
 			new SendQuery({
 				'ajax_data' : function (context) {
 					return {
@@ -784,6 +832,20 @@ $(function() {
 				'new_state' : 'draw_menu::show_all_messages',
 			}),
 		])),
+
+
+		'draw_menu::exit' : new Combine(get_menu_bind_config(0, 'exit_state').concat([
+			new Executer(function(context) {
+				erase_cookie('user_hash');
+				erase_cookie('user_name');
+			}),
+
+			new GoTo({
+				'type' : 'exit_state',
+				'new_state' : 'start',
+			}),
+		])),
+
 	});
 });
 
