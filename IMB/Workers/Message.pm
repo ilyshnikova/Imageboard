@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use utf8;
 
+use Data::Dumper;
+
 use IMB::UploadFile;
 use base 'IMB::WorkerBase';
 
@@ -39,7 +41,7 @@ sub add_message {
 			Messages(Id, BoardId, Message, UserHash, ParentMessageId, Time, Image)
 		values
 			(
-				$new_id, $board_id, " . $self->{'dbh'}->quote($text) . ", " . $self->{'dbh'}->quote($user_hash) . ", 0, now() , " . $image  . "
+				$new_id, $board_id, " . $self->{'dbh'}->quote($text) . ", " . $self->{'dbh'}->quote($user_hash) . ", 0, now(), $image
 			)
 	");
 
@@ -117,9 +119,50 @@ sub get_messages {
 }
 
 
+sub visitors_updater {
+	my $self = shift;
+       	my $board_id = shift;
+	my $user_hash = shift;
+
+	$self->{'dbh'}->do("
+		insert into
+			BoardsVisitors(LastVisitTime, UserHash, BoardId)
+		values
+			 (now(), " . $self->{'dbh'}->quote($user_hash)  . ", $board_id)
+		on duplicate key update
+			LastVisitTime=now()
+	");
+}
+
+
+sub get_number_of_board_visitors {
+	my $self = shift;
+	my $board_id = shift;
+
+	$self->{'dbh'}->do("
+		delete from
+			BoardsVisitors
+		where
+			LastVisitTime < now() - 300
+
+	");
+
+	return  $self->{'dbh'}->selectrow_array("
+		select
+			count(*)
+		from
+			BoardsVisitors
+		where
+			BoardId=" . $board_id  . " and
+			LastVisitTime + 300 > now()
+	");
+}
+
+
 sub respond {
 	my $self = shift;
 	my $data = shift;
+
 
 	if ($data->{'type'} eq 'add') {
 		my $new_id = $self->add_message($data);
@@ -128,6 +171,12 @@ sub respond {
 		return $self->get_messages($data);
 	} elsif ($data->{'type'} eq 'delete') {
 		return $self->delete_messages($data);
+	} elsif ($data->{'type'} eq 'get_messages_for_board') {
+		$self->visitors_updater($data->{'board_id'}, $data->{'user_hash'});
+		return {
+			'Messages' =>  $self->get_messages($data),
+			'BoardsVisitors' => $self->get_number_of_board_visitors($data->{'board_id'}),
+		};
 	} else {
 		die "incorrect type";
 	}

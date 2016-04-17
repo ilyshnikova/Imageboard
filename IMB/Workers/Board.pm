@@ -5,7 +5,7 @@ use warnings;
 use utf8;
 
 use base 'IMB::WorkerBase';
-
+use IMB::UploadFile;
 
 sub get_boards_names {
 	my $self = shift;
@@ -14,7 +14,8 @@ sub get_boards_names {
 		select
 			Id,
 			convert(Name using utf8) as Name,
-			convert(Title using utf8) as Title
+			convert(Title using utf8) as Title,
+			Image
 		from
 			Boards
 	", {Slice => {}});
@@ -26,6 +27,11 @@ sub add_new_board {
 
 	my ($name, $title) = map {$data->{$_}} 'name', 'title';
 
+	my $image = 0;
+
+	if ($data->{'files'}->[0]) {
+		$image = 1;
+	}
 
 	$self->{'dbh'}->do("
 		lock table
@@ -44,18 +50,26 @@ sub add_new_board {
 
 	$self->{'dbh'}->do("
 		insert into
-			Boards(Id, Name, Title)
+			Boards(Id, Name, Title, Image)
 		values
 			(
-				$new_id, " . $self->{'dbh'}->quote($name) . ", " .  $self->{'dbh'}->quote($title) . "
+				$new_id, " . $self->{'dbh'}->quote($name) . ", " .  $self->{'dbh'}->quote($title) . ", $image
 			)
 	");
+
+	if ($image) {
+		IMB::UploadFile::upload_file(
+			$data->{'files'}->[0]->{'fh'},
+			"/var/www/imageboard/public/boards_images/" . $new_id . ".png"
+		);
+	}
+
 
 	$self->{'dbh'}->do("
 		unlock tables
 	");
 
-	return $new_id;
+	return {"Id" => $new_id, "Image" => $image};
 }
 
 sub respond {
