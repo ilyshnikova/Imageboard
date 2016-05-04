@@ -66,7 +66,7 @@ sub delete_messages {
 	my $self = shift;
 	my $data = shift;
 
-	my $condition = $data->{'condition'};
+	my ($condition, $user_hash) = map {$data->{$_}} 'condition', 'user_hash';
 
 
 	$self->{'dbh'}->do("
@@ -75,14 +75,19 @@ sub delete_messages {
 			Users write
 	");
 
-
 	my $message_information = $self->get_messages($data);
 
-	if (scalar($message_information)) {
-		$self->{'dbh'}->do("delete from Messages where " . $condition);
+	if (
+		$user_hash eq $message_information->[0]->{'UserHash'}
+		&& $self->get_user_datails($user_hash)->{'Mode'}
+	) {
 
-		if ($message_information->[0]->{'Image'}) {
-			`rm /root/imageboard/messages_images/$message_information->[0]->{'Id'}.png`;
+		if (scalar($message_information)) {
+			$self->{'dbh'}->do("delete from Messages where " . $condition);
+
+			if ($message_information->[0]->{'Image'}) {
+				`rm /var/www/imageboard/public/messages_images/$message_information->[0]->{'Id'}.png`;
+			}
 		}
 	}
 	$self->{'dbh'}->do("
