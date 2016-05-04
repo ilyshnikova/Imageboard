@@ -79,7 +79,7 @@ sub delete_messages {
 
 	if (
 		$user_hash eq $message_information->[0]->{'UserHash'}
-		&& $self->get_user_datails($user_hash)->{'Mode'}
+		|| $self->get_user_datails($user_hash)->{'Mode'}
 	) {
 
 		if (scalar($message_information)) {

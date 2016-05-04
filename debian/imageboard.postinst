@@ -44,8 +44,11 @@ create table if not exists BoardsVisitors (
 	UserHash varbinary(255) not null default '',
 	BoardId int(11) not null default 0,
 	LastVisitTime timestamp not null default 0,
-	primary key(UserHash, BoardId)
-);
+	primary key(UserHash, BoardId),
+	foreign key(BoardId)
+		references Boards(Id)
+		on delete cascade
+) default charset=utf8;
 
 EOF
 echo "finish tables creating"

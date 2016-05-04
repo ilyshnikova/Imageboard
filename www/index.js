@@ -619,6 +619,15 @@ $(function() {
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::send_message',
 			}),
+			new Binder({
+				'action' : 'click',
+				'target' : function() {
+					return $('.message_to_delete');
+				},
+				'write_to' : 'message',
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::delete_message',
+			}),
 			new Enabler({
 				'target' : function () {
 					return $('#message_text');
@@ -626,6 +635,20 @@ $(function() {
 			}),
 			new Timer({
 				'timeout' : 100,
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::get_message',
+			}),
+		])),
+		'draw_menu::edit_board::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'Message',
+						'type' : 'delete',
+						'user_hash' : read_cookie('user_hash'),
+						'condition' : 'Messages.Id=' + context.message.attr('id'),
+					};
+				},
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
@@ -694,6 +717,19 @@ $(function() {
 				var html = [];
 				var messages = context.board_content.Messages;
 				for (var i = 0; i < messages.length; ++i) {
+					var delete_btn = '';
+					if (read_cookie('mode') > 0) {
+						delete_btn = (
+							'&nbsp;&nbsp;&nbsp;'
+							+ '<span'
+								+ ' class="label label-primary message_to_delete"'
+								+ ' id=' + messages[i].Id
+							+ '>'
+								+ 'Delete'
+							+ '</span>'
+						);
+					}
+
 					var date = new Date(messages[i].Time*1000);
 					var head = messages[i].UserName
 						+ ' '
@@ -731,32 +767,11 @@ $(function() {
 						 '<div class="media" style="width:700px">'
 							+ image
 						 	+ '<div class="media-body">'
-								+ '<h5 class="media-heading">' + head  + '</h5>'
+								+ '<h5 class="media-heading">'
+									+ head
+									+ delete_btn
+								+ '</h5>'
 								+ messages[i].Message
-								/*+ '<div class="media">'
-									+ '<div class="media-left">'
-										+ '<a href="#">'
-											+ '<img class="media-object" src="p.svg" alt="..." style="width:100px">'
-										+ '</a>'
-									+ '</div>'
-									+ '<div class="media-body">'
-										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ messages[i].Message
-									+ '</div>'
-								+ '</div>'
-								+ '<div class="media">'
-									+ '<div class="media-left">'
-										+ '<a href="#">'
-											+ '<img class="media-object" src="p.svg" style="width:100px">'
-										+ '</a>'
-									+ '</div>'
-									+ '<div class="media-body">'
-										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ .messages[i].Message
-									+ '</div>'
-								+ '</div>'*/
-
-								+ '</div>'
 							+ '</div>'
 						+ '</div>'
 					);
@@ -895,7 +910,7 @@ $(function() {
 						'module' : 'Message',
 						'type' : 'delete',
 						'condition' : 'Messages.Id=' + context.message.attr('id'),
-						'use_hash' : read_cookie('user_hash'),
+						'user_hash' : read_cookie('user_hash'),
 					};
 				},
 				'type' : 'exit_state',
