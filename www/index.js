@@ -322,7 +322,7 @@ $(function() {
 						}
 						board_list += (
 							'<div class="col-sm-6 col-md-4" style="width: 345px;">'
-								+ '<div class="thumbnail" style="pzadding-left: 15px;width: 330px;">'
+								+ '<div class="thumbnail" style="padding-left: 15px;width: 330px;">'
 									+ image
 									+ '<div class="caption">'
 										+ '<h3>'
