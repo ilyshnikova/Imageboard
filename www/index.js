@@ -714,8 +714,13 @@ $(function() {
 		])),
 		'draw_menu::edit_board::draw_messages' : new Combine([
 			new Executer(function(context) {
+				if (context.board_content.Status == -1) {
+					return;
+				}
 				var html = [];
 				var messages = context.board_content.Messages;
+
+
 				for (var i = 0; i < messages.length; ++i) {
 					var delete_btn = '';
 					if (read_cookie('mode') > 0) {
@@ -784,8 +789,20 @@ $(function() {
 				);
 			}),
 			new GoTo({
-				'type' : 'next',
-				'new_state' : 'draw_menu::edit_board::listen',
+				'type' : function(context) {
+					if (context.board_content.Status == 1) {
+						return 'next';
+					} else {
+						return 'exit_state';
+					}
+				},
+				'new_state' : function(context) {
+					if (context.board_content.Status == 1) {
+						return 'draw_menu::edit_board::listen';
+					} else {
+						return 'draw_menu::show_all_boards';
+					}
+				},
 			}),
 		]),
 		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(0, 'exit_state').concat([

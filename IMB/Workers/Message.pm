@@ -6,8 +6,23 @@ use utf8;
 
 use Data::Dumper;
 
-use IMB::UploadFile;
 use base 'IMB::WorkerBase';
+
+use IMB::UploadFile;
+
+sub is_board_exist {
+	my $self = shift;
+	my $board_id = shift;
+
+	return $self->{'dbh'}->selectrow_array("
+		select
+			count(*)
+		from
+			Boards
+		where
+			Id=" . $board_id  . "
+	");
+}
 
 sub add_message {
 	my $self = shift;
@@ -22,10 +37,22 @@ sub add_message {
 	}
 
 	$self->{'dbh'}->do("
-		lock table
-			Messages
-		write
+		lock tables
+			Messages write,
+			Boards write
 	");
+
+	if ($self->is_board_exist($board_id) eq 0) {
+		$self->{'dbh'}->do("
+			unlock tables
+		");
+
+		return {
+			'Status' => -1,
+		};
+	}
+
+
 
 	my ($max_id) = $self->{'dbh'}->selectrow_array("
 		select
@@ -58,7 +85,10 @@ sub add_message {
 	");
 
 
-	return $new_id;
+	return {
+		'Id' => $new_id,
+		'Status' => '1'
+	};
 }
 
 
@@ -163,6 +193,45 @@ sub get_number_of_board_visitors {
 	");
 }
 
+sub get_messages_for_board {
+	my $self = shift;
+	my $data = shift;
+
+
+	my ($board_id, $user_hash) = map {$data->{$_}} 'board_id', 'user_hash';
+
+	$self->{'dbh'}->do("
+		lock tables
+			Messages write,
+			Users write,
+			Boards write
+	");
+
+	if ($self->is_board_exist($board_id) eq 0) {
+		$self->{'dbh'}->do("
+			unlock tables
+		");
+
+		return {
+			'Status' => -1,
+		};
+	}
+
+	$self->{'dbh'}->do("
+		unlock tables
+	");
+
+	$self->visitors_updater($board_id, $user_hash);
+
+	return {
+		'Status' => '1',
+		'Messages' =>  $self->get_messages($data),
+		'BoardsVisitors' => $self->get_number_of_board_visitors($board_id),
+	};
+
+
+}
+
 
 sub respond {
 	my $self = shift;
@@ -177,11 +246,7 @@ sub respond {
 	} elsif ($data->{'type'} eq 'delete') {
 		return $self->delete_messages($data);
 	} elsif ($data->{'type'} eq 'get_messages_for_board') {
-		$self->visitors_updater($data->{'board_id'}, $data->{'user_hash'});
-		return {
-			'Messages' =>  $self->get_messages($data),
-			'BoardsVisitors' => $self->get_number_of_board_visitors($data->{'board_id'}),
-		};
+		return $self->get_messages_for_board($data);
 	} else {
 		die "incorrect type";
 	}
