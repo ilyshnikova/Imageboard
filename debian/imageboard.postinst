@@ -11,15 +11,15 @@ create table if not exists Boards (
 	Title blob not null,
 	Image tinyint(4) not null default 0,
 	primary key(Id)
-) default charset=utf8;;
+) default charset=utf8;
 
 create table if not exists Users (
 	Hash varbinary(255) not null default '',
 	Id int(11) not null default 0,
 	Name varchar(255) not null default '',
-	Email varchar(255) not null default '',
+	Mode tinyint(4) not null default 0,
 	primary key(Hash)
-) default charset=utf8;;
+) default charset=utf8;
 
 create table if not exists Messages (
 	Id int(11) not null default 0,
@@ -44,8 +44,11 @@ create table if not exists BoardsVisitors (
 	UserHash varbinary(255) not null default '',
 	BoardId int(11) not null default 0,
 	LastVisitTime timestamp not null default 0,
-	primary key(UserHash, BoardId)
-);
+	primary key(UserHash, BoardId),
+	foreign key(BoardId)
+		references Boards(Id)
+		on delete cascade
+) default charset=utf8;
 
 EOF
 echo "finish tables creating"

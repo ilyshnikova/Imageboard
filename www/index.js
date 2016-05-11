@@ -48,15 +48,6 @@ function get_menu_bind_config(depth, type) {
 		new Binder({
 			'action' : 'click',
 			'target' : function() {
-				return $('#settings');
-			},
-		    	'type' : type,
-			'depth' : depth,
-		    	'new_state' : 'draw_menu::show_settings',
-		}),
-		new Binder({
-			'action' : 'click',
-			'target' : function() {
 				return $('#exit');
 			},
 		    	'type' : type,
@@ -85,6 +76,7 @@ $(function() {
 			'type' : 'next',
 			'new_state' : function (context) {
 				if (context.user.Id) {
+					create_cookie('mode', context.user.Mode);
 					return 'draw_menu';
 				} else {
 					return 'login';
@@ -177,7 +169,38 @@ $(function() {
 					return $('#registration');
 				},
 				'type' : 'next',
+				'new_state' : 'login::check_new_user_name',
+			}),
+		]),
+		'login::check_new_user_name' : new Combine([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return  {
+						'module' : 'User',
+						'type' : 'get_by_name',
+						'user_name' : $('#user_name').val(),
+					};
+				},
+				'write_to' : 'user',
+				'type' : 'next',
 				'new_state' : 'login::create_new_user',
+			}),
+		]),
+		'login::check_user' : new Combine([
+			new Executer(function(context) {
+				if (context.user.Id) {
+					alert("User with name such name already exists");
+				}
+			}),
+			new GoTo({
+				'type' : 'next',
+				'new_state' : function(context) {
+					if (context.user.Id) {
+						return 'login::listen';
+					} else {
+						return 'login::save_cookie';
+					}
+				},
 			}),
 		]),
 		'login::save_cookie' : new Combine([
@@ -280,7 +303,23 @@ $(function() {
 									+ '>'
 
 						}
+						var delete_btn = '';
+						if (read_cookie('mode') > 0) {
+							delete_btn = (
+								'&nbsp;&nbsp;&nbsp;'
+								+ '<a'
+									+ ' href="#"'
+									+ ' class="btn btn-primary delete-board"'
+									+ ' role="button"'
+									+ ' id="'
+										+ context.board_names[index].Id
+									+ '"'
+								+ '>'
+									+ 'Delete'
+								+ '</a>'
 
+							);
+						}
 						board_list += (
 							'<div class="col-sm-6 col-md-4" style="width: 345px;">'
 								+ '<div class="thumbnail" style="padding-left: 15px;width: 330px;">'
@@ -289,7 +328,7 @@ $(function() {
 										+ '<h3>'
 											+ context.board_names[index].Name
 										+ '</h3>'
-										+ '<p>'
+										+ '<p style="word-wrap: break-word;">'
 											+ context.board_names[index].Title
 										+ '</p>'
 										+ '<p>'
@@ -303,6 +342,7 @@ $(function() {
 											+ '>'
 												+ 'Go!'
 											+ '</a>'
+											+ delete_btn
 										+ '</p>'
       									+ '</div>'
 								+ '</div>'
@@ -317,6 +357,7 @@ $(function() {
 						<button type="button" class="btn btn-default" id=create_new_board>
 							+ New Board
 						</button>
+						<br><br>
 					`);
 					container.append(board_list);
 				},
@@ -343,6 +384,29 @@ $(function() {
 				},
 				'type' : 'next',
 				'new_state' : 'draw_menu::draw_boards_names::create_new_board_dialog',
+			}),
+			new Binder({
+				'action' : 'click',
+				'target' : function() {
+					return $('.delete-board');
+				},
+				'write_to' : 'chosen_board_to_delete',
+				'type' : 'next',
+				'new_state' : 'draw_menu::delete_board',
+			}),
+		])),
+		'draw_menu::delete_board' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'Board',
+						'type' : 'delete',
+						'board_id' : context.chosen_board_to_delete.attr('id'),
+						'user_hash' : read_cookie('user_hash'),
+					};
+				},
+				'type' : 'exit_state',
+				'new_state' : 'draw_menu::show_all_boards',
 			}),
 		])),
 		'draw_menu::draw_boards_names::save_board_name' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
@@ -403,6 +467,10 @@ $(function() {
 				},
 				'buttons' : '<button id=Ok type="button" class="btn btn-default">Ok</button>',
 			}),
+			new Executer(function(context){
+				loadjscssfile("http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js", "js");
+			}),
+
 			new GoTo({
 				'type' : 'substate',
 				'new_state' : 'draw_menu::draw_boards_names::create_new_board_dialog::listen',
@@ -530,11 +598,8 @@ $(function() {
 					return $('#head');
 				},
 				'func' : function(context, container) {
-					container.append('<span>' + context.parent.board_name + '<span>');
+					container.append('<h3>' + context.parent.board_name + '</h3>');
 				},
-			}),
-			new Executer(function(context){
-				loadjscssfile("http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js", "js");
 			}),
 			new GoTo({
 				'type' : 'substate',
@@ -542,6 +607,10 @@ $(function() {
 			}),
 		])),
 		'draw_menu::edit_board::listen' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new Executer(function(context){
+				loadjscssfile("http://markusslima.github.io/bootstrap-filestyle/js/bootstrap-filestyle.min.js", "js");
+			}),
+
 			new Binder({
 				'action' : 'click',
 	    			'target' : function() {
@@ -550,6 +619,15 @@ $(function() {
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::send_message',
 			}),
+			new Binder({
+				'action' : 'click',
+				'target' : function() {
+					return $('.message_to_delete');
+				},
+				'write_to' : 'message',
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::delete_message',
+			}),
 			new Enabler({
 				'target' : function () {
 					return $('#message_text');
@@ -557,6 +635,20 @@ $(function() {
 			}),
 			new Timer({
 				'timeout' : 100,
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::get_message',
+			}),
+		])),
+		'draw_menu::edit_board::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'Message',
+						'type' : 'delete',
+						'user_hash' : read_cookie('user_hash'),
+						'condition' : 'Messages.Id=' + context.message.attr('id'),
+					};
+				},
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
@@ -622,9 +714,27 @@ $(function() {
 		])),
 		'draw_menu::edit_board::draw_messages' : new Combine([
 			new Executer(function(context) {
+				if (context.board_content.Status == -1) {
+					return;
+				}
 				var html = [];
 				var messages = context.board_content.Messages;
+
+
 				for (var i = 0; i < messages.length; ++i) {
+					var delete_btn = '';
+					if (read_cookie('mode') > 0) {
+						delete_btn = (
+							'&nbsp;&nbsp;&nbsp;'
+							+ '<span'
+								+ ' class="label label-primary message_to_delete"'
+								+ ' id=' + messages[i].Id
+							+ '>'
+								+ 'Delete'
+							+ '</span>'
+						);
+					}
+
 					var date = new Date(messages[i].Time*1000);
 					var head = messages[i].UserName
 						+ ' '
@@ -662,32 +772,11 @@ $(function() {
 						 '<div class="media" style="width:700px">'
 							+ image
 						 	+ '<div class="media-body">'
-								+ '<h5 class="media-heading">' + head  + '</h5>'
+								+ '<h5 class="media-heading">'
+									+ head
+									+ delete_btn
+								+ '</h5>'
 								+ messages[i].Message
-								/*+ '<div class="media">'
-									+ '<div class="media-left">'
-										+ '<a href="#">'
-											+ '<img class="media-object" src="p.svg" alt="..." style="width:100px">'
-										+ '</a>'
-									+ '</div>'
-									+ '<div class="media-body">'
-										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ messages[i].Message
-									+ '</div>'
-								+ '</div>'
-								+ '<div class="media">'
-									+ '<div class="media-left">'
-										+ '<a href="#">'
-											+ '<img class="media-object" src="p.svg" style="width:100px">'
-										+ '</a>'
-									+ '</div>'
-									+ '<div class="media-body">'
-										+ '<h5 class="media-heading">' + head  + '</h5>'
-										+ .messages[i].Message
-									+ '</div>'
-								+ '</div>'*/
-
-								+ '</div>'
 							+ '</div>'
 						+ '</div>'
 					);
@@ -700,8 +789,20 @@ $(function() {
 				);
 			}),
 			new GoTo({
-				'type' : 'next',
-				'new_state' : 'draw_menu::edit_board::listen',
+				'type' : function(context) {
+					if (context.board_content.Status == 1) {
+						return 'next';
+					} else {
+						return 'exit_state';
+					}
+				},
+				'new_state' : function(context) {
+					if (context.board_content.Status == 1) {
+						return 'draw_menu::edit_board::listen';
+					} else {
+						return 'draw_menu::show_all_boards';
+					}
+				},
 			}),
 		]),
 		'draw_menu::show_all_messages' : new Combine(get_menu_bind_config(0, 'exit_state').concat([
@@ -826,13 +927,13 @@ $(function() {
 						'module' : 'Message',
 						'type' : 'delete',
 						'condition' : 'Messages.Id=' + context.message.attr('id'),
+						'user_hash' : read_cookie('user_hash'),
 					};
 				},
 				'type' : 'exit_state',
 				'new_state' : 'draw_menu::show_all_messages',
 			}),
 		])),
-
 
 		'draw_menu::exit' : new Combine(get_menu_bind_config(0, 'exit_state').concat([
 			new Executer(function(context) {

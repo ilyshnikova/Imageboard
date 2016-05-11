@@ -73,36 +73,19 @@ function side_menu() {
 					</a>
 				</li>
 				<li class="divider" style="width:220px"></li>
-				<li class="dropdown">
-					<a class="ripple-effect dropdown-toggle" href="#" data-toggle="dropdown">
-						All Messages
-						<b class="caret"></b>
+
+				<li>
+					<a href="#" id=all_messages>
+						Messages
 					</a>
-					<ul class="dropdown-menu">
-						<li>
-							<a href="#" tabindex="-1" id=all_messages>
-								Your Messages
-							</a>
-						</li>
-						<li>
-							<a href="#" tabindex="-1" id=all_comments>
-								Your Comments
-							</a>
-						</li>
-					</ul>
 				</li>
+
 				<li>
 					<a href="#" id=all_images>
-						All Images
+						Images
 					</a>
 				</li>
-				<li>
-					<a href="#" id=answers>
-						Answers
-						<span class="sidebar-badge">N</span>
-					</a>
-				</li>
-				<li class="divider" style="width:220px"></li>
+							<li class="divider" style="width:220px"></li>
 				<li class="dropdown">
 					<a class="ripple-effect dropdown-toggle" href="#" data-toggle="dropdown">
 						Profile
@@ -206,6 +189,8 @@ function get_board_head(picture_ref) {
 			</div>
 		`
 }
+
+
 
 function loadjscssfile(filename, filetype){
     if (filetype=="js"){ //if filename is a external JavaScript file
