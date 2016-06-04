@@ -628,16 +628,41 @@ $(function() {
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::delete_message',
 			}),
+			new Binder({
+				'action' : 'click',
+				'target' : function() {
+					return $('.lock_user');
+				},
+				'write_to' : 'user_to_lock',
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::lock_user',
+			}),
+
 			new Enabler({
 				'target' : function () {
 					return $('#message_text');
 				},
 			}),
 			new Timer({
-				'timeout' : 100,
+				'timeout' : 1,
 				'type' : 'next',
-				'new_state' : 'draw_menu::edit_board::get_message',
+				'new_state' : 'draw_menu::edit_board::get_messages',
 			}),
+		])),
+		'draw_menu::edit_board::lock_user' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new SendQuery({
+				'ajax_data' : function(context) {
+					return {
+						'module' : 'User',
+						'type' : 'lock',
+						'user_hash' : read_cookie('user_hash'),
+						'user_to_lock' : context.user_to_lock.attr('id'),
+					};
+				},
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::get_messages',
+			}),
+
 		])),
 		'draw_menu::edit_board::delete_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
 			new SendQuery({
@@ -667,10 +692,23 @@ $(function() {
 				'file_input' : function() {
 					return $('#image');
 				},
+				'write_to' : 'result',
+				'type' : 'next',
+				'new_state' : 'draw_menu::edit_board::check_status',
+			}),
+		])),
+		'draw_menu::edit_board::check_status' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
+			new Executer(function(context) {
+				if (context.result.Status == -1) {
+					alert(context.result.Respond);
+				}
+			}),
+			new GoTo({
 				'type' : 'next',
 				'new_state' : 'draw_menu::edit_board::clean_message',
 			}),
 		])),
+
 		'draw_menu::edit_board::clean_message' : new Combine(get_menu_bind_config(1, 'exit_state').concat([
 			new Executer(function(context) {
 				$('#message_text').val("");
@@ -723,6 +761,7 @@ $(function() {
 
 				for (var i = 0; i < messages.length; ++i) {
 					var delete_btn = '';
+					var st = '';
 					if (read_cookie('mode') > 0) {
 						delete_btn = (
 							'&nbsp;&nbsp;&nbsp;'
@@ -733,14 +772,36 @@ $(function() {
 								+ 'Delete'
 							+ '</span>'
 						);
+						if (messages[i].BanMode == 1) {
+							st =
+								'&nbsp;&nbsp;&nbsp;'
+								+ '<span'
+									+ ' class="label label-primary lock_user"'
+									+ ' id=' + messages[i].UserHash
+								+ '>'
+									+ 'Unlock'
+								+ '</span>';
+
+						}  else {
+							st =
+								'&nbsp;&nbsp;&nbsp;'
+								+ '<span'
+									+ ' class="label label-primary lock_user"'
+									+ ' id=' + messages[i].UserHash
+								+ '>'
+									+ 'Lock'
+								+ '</span>';
+						}
+
 					}
 
 					var date = new Date(messages[i].Time*1000);
-					var head = messages[i].UserName
+				       	var head = messages[i].UserName
 						+ ' '
 						+ date.toString()
 						+ ' №'
 						+ messages[i].Id;
+
 					var image = '';
 					if (messages[i].Image == "1") {
 						var image_name = (
@@ -775,6 +836,7 @@ $(function() {
 								+ '<h5 class="media-heading">'
 									+ head
 									+ delete_btn
+									+ st
 								+ '</h5>'
 								+ messages[i].Message
 							+ '</div>'
