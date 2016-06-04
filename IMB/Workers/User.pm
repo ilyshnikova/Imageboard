@@ -57,6 +57,36 @@ sub get_by_name {
 
 }
 
+sub lock_user {
+	my $self = shift;
+	my $data = shift;
+
+	my ($user_hash,$user_to_lock) = map {$data->{$_}} 'user_hash', 'user_to_lock';
+
+	if ($self->get_user_datails($user_hash)->{'Mode'}) {
+		$self->{'dbh'}->do("
+			lock table
+				Users write
+		");
+
+		$self->{'dbh'}->do("
+			update
+				Users
+			set
+				BanMode=MOD(BanMode+1, 2)
+			where
+				Hash='$user_to_lock'
+		");
+		$self->{'dbh'}->do("
+			unlock tables
+		");
+
+
+	}
+	return {};
+
+
+}
 
 sub respond {
 	my $self = shift;
@@ -69,6 +99,8 @@ sub respond {
 		return {};
 	} elsif ($data->{'type'} eq 'get_by_name') {
 		$self->get_by_name($data);
+	} elsif ($data->{'type'} eq 'lock') {
+		return $self->lock_user($data);
 	} else {
 		die "unknown type";
 	}

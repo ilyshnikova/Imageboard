@@ -36,19 +36,32 @@ sub add_message {
 		$image = 1;
 	}
 
+
+	my $user_info = $self->get_user_datails($user_hash);
+
 	$self->{'dbh'}->do("
 		lock tables
 			Messages write,
 			Boards write
 	");
 
-	if ($self->is_board_exist($board_id) eq 0) {
+
+
+	if ($self->is_board_exist($board_id) eq 0 || $user_info->{'BanMode'} > 0) {
 		$self->{'dbh'}->do("
 			unlock tables
 		");
 
+		my $error_message = '';
+		if ($user_info->{'BanMode'} > 0) {
+			$error_message =  'You can\'t send messages.';
+		} else {
+			$error_message = 'Board does not exists.';
+		}
+
 		return {
 			'Status' => -1,
+			'Respond' => $error_message,
 		};
 	}
 
@@ -65,10 +78,10 @@ sub add_message {
 
 	$self->{'dbh'}->do("
 		insert into
-			Messages(Id, BoardId, Message, UserHash, ParentMessageId, Time, Image)
+			Messages(Id, BoardId, Message, UserHash, Time, Image)
 		values
 			(
-				$new_id, $board_id, " . $self->{'dbh'}->quote($text) . ", " . $self->{'dbh'}->quote($user_hash) . ", 0, now(), $image
+				$new_id, $board_id, " . $self->{'dbh'}->quote($text) . ", " . $self->{'dbh'}->quote($user_hash) . ", now(), $image
 			)
 	");
 
@@ -139,17 +152,19 @@ sub get_messages {
 		select
 			Messages.Id as Id,
 			convert(Messages.Message using utf8) as Message,
-			Messages.ParentMessageId as ParentMessageId,
 			unix_timestamp(Messages.Time) as Time,
 			Messages.Image as Image,
 			Users.Name as UserName,
-			Users.Hash as UserHash
+			Users.Hash as UserHash,
+			Users.BanMode as BanMode
 		from
 			Messages
 		inner join
 			Users on Messages.UserHash = Users.Hash
 		where
 			$condition
+		order by
+			Time
 	", {Slice => {}});
 }
 
@@ -239,8 +254,7 @@ sub respond {
 
 
 	if ($data->{'type'} eq 'add') {
-		my $new_id = $self->add_message($data);
-		return {'message_id' => $new_id};
+		return $self->add_message($data);
 	} elsif ($data->{'type'} eq 'get') {
 		return $self->get_messages($data);
 	} elsif ($data->{'type'} eq 'delete') {
